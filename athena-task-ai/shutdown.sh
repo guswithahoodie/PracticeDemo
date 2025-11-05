@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-PROJECT="athena-task-ai-dev"
+PROJECT="demo_project-task-ai-dev"
 REGION="us-east-1"
 
 echo "⚡ Shutting down AWS demo project: $PROJECT in region $REGION"

@@ -10,8 +10,8 @@ resource "aws_db_instance" "postgres" {
   engine_version         = "15.7"
   instance_class         = var.db_instance_class
   allocated_storage      = var.db_allocated_storage
-  db_name                = "athena"
-  username               = "athena"
+  db_name                = "demo_project"
+  username               = "demo_project"
   password               = random_password.db_password.result
   skip_final_snapshot    = true
   db_subnet_group_name   = aws_db_subnet_group.rds_subnets.name

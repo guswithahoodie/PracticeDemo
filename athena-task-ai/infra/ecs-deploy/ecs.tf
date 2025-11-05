@@ -20,7 +20,7 @@ resource "aws_ecs_task_definition" "app" {
 
   container_definitions = jsonencode([
     {
-      name         = "athena-api"
+      name         = "demo_project-api"
       image        = "${aws_ecr_repository.app.repository_url}:latest" # update with proper tag
       essential    = true
       portMappings = [{ containerPort = 8000, hostPort = 8000, protocol = "tcp" }]
@@ -29,14 +29,14 @@ resource "aws_ecs_task_definition" "app" {
         options = {
           awslogs-group         = aws_cloudwatch_log_group.ecs.name
           awslogs-region        = var.aws_region
-          awslogs-stream-prefix = "athena"
+          awslogs-stream-prefix = "demo_project"
         }
       }
       environment = [
         { name = "DB_HOST", value = aws_db_instance.postgres.address },
         { name = "DB_PORT", value = "5432" },
         { name = "DB_NAME", value = aws_db_instance.postgres.db_name },
-        { name = "DB_USER", value = "athena" },
+        { name = "DB_USER", value = "demo_project" },
         { name = "DB_PASSWORD", value = random_password.db_password.result },
         { name = "APP_ENV", value = "prod" }
       ]
@@ -79,7 +79,7 @@ resource "aws_ecs_service" "this" {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.app.arn
-    container_name   = "athena-api"
+    container_name   = "demo_project-api"
     container_port   = 8000
   }
 

@@ -5,7 +5,7 @@ variable "aws_region" {
 
 variable "project" {
   type    = string
-  default = "athena-task-ai"
+  default = "demo_project-task-ai"
 }
 
 variable "env" {

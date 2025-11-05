@@ -1,6 +1,6 @@
 # Security Group for RDS (Postgres)
 resource "aws_security_group" "rds_sg" {
-  name        = "athena-rds-sg"
+  name        = "demo_project-rds-sg"
   description = "Allow ECS access to Postgres"
   vpc_id      = aws_vpc.my_aws_vpc.id
 
@@ -20,12 +20,12 @@ resource "aws_security_group" "rds_sg" {
   }
 
   tags = {
-    Name = "athena-rds-sg"
+    Name = "demo_project-rds-sg"
   }
 }
 
 resource "aws_security_group" "ecs_service_sg" {
-  name        = "athena-ecs-sg"
+  name        = "demo_project-ecs-sg"
   description = "Allow ECS tasks to reach external services"
   vpc_id      = aws_vpc.my_aws_vpc.id
 
@@ -37,6 +37,6 @@ resource "aws_security_group" "ecs_service_sg" {
   }
 
   tags = {
-    Name = "athena-ecs-sg"
+    Name = "demo_project-ecs-sg"
   }
 }

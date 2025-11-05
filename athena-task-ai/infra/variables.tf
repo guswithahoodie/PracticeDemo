@@ -1,7 +1,7 @@
 variable "project_name" {
   type        = string
   description = "Project Name"
-  default     = "athena-task-ai"
+  default     = "demo_project-task-ai"
 }
 
 variable "aws_region" {
