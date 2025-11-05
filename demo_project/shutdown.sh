@@ -3,20 +3,32 @@ set -euo pipefail
 
 PROJECT="demo_project-task-ai-dev"
 REGION="us-east-1"
-DRY_RUN=${DRY_RUN:-true}  # Set to false to actually delete resources
+DRY_RUN=${DRY_RUN:-true}  # Set DRY_RUN=false to actually delete resources
 
-echo "Shutting down AWS demo project: $PROJECT in region $REGION (dry run: $DRY_RUN)"
+echo "Shutting down AWS demo project: $PROJECT in region $REGION"
+if [ "$DRY_RUN" = true ]; then
+    echo "DRY RUN mode enabled. No resources will actually be deleted."
+fi
 
 ###########################################
 # Helper functions
 ###########################################
+execute() {
+    local cmd="$1"
+    if [ "$DRY_RUN" = true ]; then
+        echo "[DRY RUN] $cmd"
+    else
+        eval "$cmd"
+    fi
+}
+
 retry_command() {
     local cmd="$1"
     local retries=${2:-5}
     local delay=${3:-5}
     local attempt=1
 
-    until $cmd; do
+    until eval "$cmd"; do
         if [ $attempt -ge $retries ]; then
             echo "Command failed after $attempt attempts: $cmd"
             return 1
@@ -27,19 +39,12 @@ retry_command() {
     done
 }
 
-execute() {
-    if [ "$DRY_RUN" = true ]; then
-        echo "[DRY RUN] $*"
-    else
-        eval "$@"
-    fi
-}
-
 ###########################################
 # ECS Services
 ###########################################
 services=$(aws ecs list-services --cluster "${PROJECT}-cluster" --region "$REGION" --query 'serviceArns' --output text)
 for service in $services; do
+    echo "Stopping service: $service"
     execute "aws ecs update-service --cluster ${PROJECT}-cluster --service $service --desired-count 0 --force-new-deployment --region $REGION"
     execute "aws ecs wait services-stable --cluster ${PROJECT}-cluster --services $service --region $REGION"
     execute "aws ecs delete-service --cluster ${PROJECT}-cluster --service $service --region $REGION --force"
@@ -71,7 +76,8 @@ done
 ###########################################
 sgs=$(aws ec2 describe-security-groups --region "$REGION" --filters "Name=group-name,Values=${PROJECT}*" --query 'SecurityGroups[].GroupId' --output text)
 for sg in $sgs; do
-    execute "retry_command 'aws ec2 delete-security-group --group-id $sg --region $REGION' 10 5"
+    echo "Deleting security group: $sg"
+    retry_command "execute \"aws ec2 delete-security-group --group-id $sg --region $REGION\"" 10 5
     echo "Deleted security group: $sg"
 done
 
@@ -80,9 +86,10 @@ done
 ###########################################
 repos=$(aws ecr describe-repositories --region "$REGION" --query "repositories[?contains(repositoryName, '${PROJECT}')].repositoryName" --output text)
 for repo in $repos; do
-    images=$(aws ecr list-images --repository-name "$repo" --region "$REGION" --query 'imageIds[*]' --output json)
+    echo "Checking images in ECR repo: $repo"
+    images=$(aws ecr list-images --repository-name "$repo" --region "$REGION" --query 'imageIds' --output json)
     if [ "$images" != "[]" ]; then
-        execute "retry_command 'aws ecr batch-delete-image --repository-name $repo --image-ids '$images' --region $REGION' 10 5"
+        execute "aws ecr batch-delete-image --repository-name $repo --image-ids '$images' --region $REGION"
     fi
     execute "aws ecr delete-repository --repository-name $repo --region $REGION --force"
     echo "Deleted ECR repository: $repo"
@@ -106,8 +113,8 @@ for vpc in $vpcs; do
         execute "aws ec2 delete-subnet --subnet-id $subnet --region $REGION"
     done
 
-    execute "retry_command 'aws ec2 delete-vpc --vpc-id $vpc --region $REGION' 10 5"
+    retry_command "execute \"aws ec2 delete-vpc --vpc-id $vpc --region $REGION\"" 10 5
     echo "Deleted VPC: $vpc"
 done
 
-echo "All resources for $PROJECT have been cleaned up (dry run: $DRY_RUN)"
+echo "All resources for $PROJECT have been cleaned up (or dry run executed)."
