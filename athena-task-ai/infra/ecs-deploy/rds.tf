@@ -7,7 +7,7 @@ resource "aws_db_subnet_group" "rds_subnets" {
 resource "aws_db_instance" "postgres" {
   identifier             = "${var.project}-${var.env}-postgres"
   engine                 = "postgres"
-  engine_version         = "15.4"
+  engine_version         = "15.7"
   instance_class         = var.db_instance_class
   allocated_storage      = var.db_allocated_storage
   db_name                = "athena"

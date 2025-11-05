@@ -25,10 +25,12 @@ resource "aws_lb" "alb" {
 }
 
 resource "aws_lb_target_group" "app" {
-  name     = "${var.project}-${var.env}-tg"
-  port     = 8000
-  protocol = "HTTP"
-  vpc_id   = aws_vpc.my_aws_vpc.id
+  name         = "${var.project}-${var.env}-tg"
+  port         = 8000
+  protocol     = "HTTP"
+  vpc_id       = aws_vpc.my_aws_vpc.id
+  target_type  = "ip"     # ✅ Required for Fargate/awsvpc
+
   health_check {
     path                = "/"
     protocol            = "HTTP"
@@ -49,4 +51,8 @@ resource "aws_lb_listener" "front" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.app.arn
   }
+
+  depends_on = [
+    aws_lb_target_group.app
+  ]
 }
