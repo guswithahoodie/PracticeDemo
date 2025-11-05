@@ -1,26 +1,22 @@
-# Python base image
-FROM python:3.11-slim
+# Stage 1 — Build and install dependencies
+FROM python:3.12-slim AS builder
 
-# Set working directory
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# Stage 2 — Final lightweight runtime image
+FROM python:3.12-slim
+
+ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
-# Prevent Python from writing .pyc files & enable stdout flush
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+# Copy installed python packages from builder
+COPY --from=builder /install /usr/local
 
-# Install system dependencies for PostgreSQL
-RUN apt-get update && \
-    apt-get install -y gcc libpq-dev && \
-    apt-get clean
-
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy project files to container
+# Copy only source code (NOT venv)
 COPY . .
 
-# Expose Django port
 EXPOSE 8000
 
-# Default startup command is passed via docker-compose
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
