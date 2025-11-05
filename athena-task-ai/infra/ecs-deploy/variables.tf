@@ -15,7 +15,7 @@ variable "env" {
 
 variable "db_instance_class" {
   type    = string
-  default = "db.t3.micro"   # cheap dev option
+  default = "db.t3.micro" # cheap dev option
 }
 
 variable "db_allocated_storage" {

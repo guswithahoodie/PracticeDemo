@@ -4,7 +4,7 @@ resource "aws_ecs_cluster" "this" {
 
 # Log group
 resource "aws_cloudwatch_log_group" "ecs" {
-  name = "/ecs/${var.project}-${var.env}"
+  name              = "/ecs/${var.project}-${var.env}"
   retention_in_days = 7
 }
 
@@ -20,9 +20,9 @@ resource "aws_ecs_task_definition" "app" {
 
   container_definitions = jsonencode([
     {
-      name  = "athena-api"
-      image = "${aws_ecr_repository.app.repository_url}:latest"  # update with proper tag
-      essential = true
+      name         = "athena-api"
+      image        = "${aws_ecr_repository.app.repository_url}:latest" # update with proper tag
+      essential    = true
       portMappings = [{ containerPort = 8000, hostPort = 8000, protocol = "tcp" }]
       logConfiguration = {
         logDriver = "awslogs"
@@ -35,7 +35,7 @@ resource "aws_ecs_task_definition" "app" {
       environment = [
         { name = "DB_HOST", value = aws_db_instance.postgres.address },
         { name = "DB_PORT", value = "5432" },
-        { name = "DB_NAME", value = aws_db_instance.postgres.name },
+        { name = "DB_NAME", value = aws_db_instance.postgres.db_name },
         { name = "DB_USER", value = "athena" },
         { name = "DB_PASSWORD", value = random_password.db_password.result },
         { name = "APP_ENV", value = "prod" }
@@ -48,12 +48,12 @@ resource "aws_ecs_task_definition" "app" {
 resource "aws_security_group" "ecs_sg" {
   name        = "${var.project}-${var.env}-ecs-sg"
   description = "Allow ALB to reach ECS tasks"
-  vpc_id      = aws_vpc.this.id
+  vpc_id      = aws_vpc.my_aws_vpc.id
   ingress {
-    description = "From ALB"
-    from_port   = 8000
-    to_port     = 8000
-    protocol    = "tcp"
+    description     = "From ALB"
+    from_port       = 8000
+    to_port         = 8000
+    protocol        = "tcp"
     security_groups = [aws_security_group.alb_sg.id]
   }
   egress {
@@ -72,8 +72,8 @@ resource "aws_ecs_service" "this" {
   desired_count   = 1
   launch_type     = "FARGATE"
   network_configuration {
-    subnets         = aws_subnet.public[*].id
-    security_groups = [aws_security_group.ecs_sg.id]
+    subnets          = aws_subnet.public[*].id
+    security_groups  = [aws_security_group.ecs_sg.id]
     assign_public_ip = true
   }
 

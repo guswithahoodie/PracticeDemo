@@ -1,6 +1,6 @@
 resource "aws_security_group" "alb_sg" {
   name        = "${var.project}-${var.env}-alb-sg"
-  vpc_id      = aws_vpc.this.id
+  vpc_id      = aws_vpc.my_aws_vpc.id
   description = "Allow HTTP inbound"
   ingress {
     from_port   = 80
@@ -28,7 +28,7 @@ resource "aws_lb_target_group" "app" {
   name     = "${var.project}-${var.env}-tg"
   port     = 8000
   protocol = "HTTP"
-  vpc_id   = aws_vpc.this.id
+  vpc_id   = aws_vpc.my_aws_vpc.id
   health_check {
     path                = "/"
     protocol            = "HTTP"
