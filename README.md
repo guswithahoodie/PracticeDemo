@@ -1,4 +1,4 @@
-# Athena Task AI - Demo Project
+# demo_propject Task AI - Demo Project
 
 This project is a demo **Django-based task management API** deployed on AWS using ECS Fargate. It demonstrates how to containerize a Django application, push it to AWS ECR, and run it in a fully managed serverless container environment with an Application Load Balancer (ALB).
 
@@ -49,7 +49,7 @@ The deployment uses the following AWS services:
 | Component | Purpose |
 |-----------|---------|
 | **ECS Fargate** | Runs the Django app in a serverless container environment. |
-| **ECR (Elastic Container Registry)** | Stores the Docker image (`athena-task-ai-dev:latest`). |
+| **ECR (Elastic Container Registry)** | Stores the Docker image (`demo_propject-task-ai-dev:latest`). |
 | **ALB (Application Load Balancer)** | Distributes incoming HTTP requests to ECS tasks. |
 | **Target Groups** | Groups ECS tasks for the ALB to route traffic. |
 | **Security Groups** | Manages inbound/outbound access to tasks. |
