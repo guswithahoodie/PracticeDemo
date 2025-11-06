@@ -29,8 +29,8 @@ resource "aws_security_group" "ec2_sg" {
 }
 
 resource "aws_eip" "ec2_eip" {
+  domain = "vpc"
   instance = aws_instance.app.id
-  vpc      = true
   tags = { Name = "${var.project}-${var.env}-eip" }
 }
 
