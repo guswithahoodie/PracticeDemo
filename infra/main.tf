@@ -61,7 +61,6 @@ module "iam" {
 # --- EC2 Instance for Django API ---
 module "ec2" {
   source = "./modules/ec2"
-
   subnet_id      = module.vpc.subnet_id
   security_group = module.vpc.security_group
   ec2_role_name  = module.iam.ec2_role_name   # <--- pass the IAM role name from IAM module
