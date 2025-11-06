@@ -38,4 +38,6 @@ module "ec2" {
   git_repo          = var.git_repo
   git_branch        = var.git_branch
   my_ip             = var.my_ip_cidr
+
+  ec2_role_name     = module.iam.ec2_role_name
 }
