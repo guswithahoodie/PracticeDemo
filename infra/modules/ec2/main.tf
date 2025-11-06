@@ -52,7 +52,10 @@ resource "aws_instance" "app" {
 data "aws_ami" "al2023" {
   owners      = ["amazon"]
   most_recent = true
-  filter { name = "name" values = ["al2023-ami-*"] }
+  filter {
+    name   = "name"
+    values = ["al2023-ami-*"]
+  }
 }
 
 resource "aws_iam_instance_profile" "ec2_profile" {
