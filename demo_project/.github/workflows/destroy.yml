@@ -1,0 +1,27 @@
+name: Destroy Infrastructure
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Initialize Terraform
+        working-directory: infra/envs/dev
+        run: terraform init
+
+      - name: Destroy Infrastructure
+        working-directory: infra/envs/dev
+        run: terraform destroy -auto-approve
