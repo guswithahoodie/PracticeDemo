@@ -61,23 +61,34 @@ resource "aws_iam_role" "ec2_role" {
 module "vpc" {
   source = "./modules/vpc"
 
-  project_name = var.project_name
+  project        = var.project_name         # your root variable, maps to module's 'project'
+  env            = var.env                  # your root variable, maps to module's 'env'
+  public_subnets = var.public_subnets       # must be defined in infra/variables.tf
+  azs            = var.azs                  # must be defined in infra/variables.tf
+  vpc_cidr       = var.vpc_cidr             # optional, can omit if default is fine
 }
 
 # --- IAM for EC2 ---
 module "iam" {
   source = "./modules/iam"
 
-  project_name = var.project_name
+  project = var.project_name   # passes the project name to the 'project' variable
+  env     = var.env            # passes the env variable
 }
 
 # --- EC2 Instance for Django API ---
 module "ec2" {
-  source = "./modules/ec2"
-  subnet_id      = module.vpc.subnet_id
-  security_group = module.vpc.security_group
-  ec2_role_name  = module.iam.ec2_role_name   # <--- pass the IAM role name from IAM module
-  project_name   = var.project_name
+  source            = "./modules/ec2"
+
+  project           = var.project_name      # matches variable "project" in module
+  env               = var.env               # matches variable "env" in module
+  vpc_id            = module.vpc.vpc_id     # matches variable "vpc_id"
+  public_subnet_ids = module.vpc.public_subnet_ids  # matches variable "public_subnet_ids"
+  instance_type     = var.instance_type
+  git_repo          = var.git_repo
+  git_branch        = var.git_branch
+  my_ip             = var.my_ip
+  ec2_role_name     = module.iam.ec2_role_name
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
