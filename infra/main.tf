@@ -44,6 +44,19 @@ resource "aws_iam_role" "lambda_exec_role" {
   })
 }
 
+resource "aws_iam_role" "ec2_role" {
+  name = "${var.project_name}-ec2-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = { Service = "ec2.amazonaws.com" }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
 # --- VPC Networking ---
 module "vpc" {
   source = "./modules/vpc"
@@ -61,7 +74,6 @@ module "iam" {
 # --- EC2 Instance for Django API ---
 module "ec2" {
   source = "./modules/ec2"
-
   subnet_id      = module.vpc.subnet_id
   security_group = module.vpc.security_group
   ec2_role_name  = module.iam.ec2_role_name   # <--- pass the IAM role name from IAM module
