@@ -1,4 +1,11 @@
 terraform {
+  backend "s3" {
+    bucket         = "gus-demo-project-tfstate"
+    key            = "dev/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "gus-demo-project-tflock"
+    encrypt        = true
+  }
   required_providers {
     aws = {
       source  = "hashicorp/aws"
