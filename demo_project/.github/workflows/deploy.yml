@@ -10,7 +10,7 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
+    environment: demo_env
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
