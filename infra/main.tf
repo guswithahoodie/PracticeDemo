@@ -89,6 +89,8 @@ module "ec2" {
   git_branch        = var.git_branch
   my_ip             = var.my_ip
   ec2_role_name     = module.iam.ec2_role_name
+  ecr_repository_url = "043656069964.dkr.ecr.${var.region}.amazonaws.com/${var.project}"
+  image_tag          = "latest"
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
