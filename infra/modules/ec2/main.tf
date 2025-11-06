@@ -1,5 +1,5 @@
 resource "aws_security_group" "ec2_sg" {
-  name   = "${var.project}-${var.env}-ec2-sg"
+  name   = "${var.project}-ec2-sg"
   vpc_id = var.vpc_id
 
   ingress {
@@ -15,7 +15,7 @@ resource "aws_security_group" "ec2_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = [var.my_ip]
+    cidr_blocks = [var.my_ip_cidr]
   }
 
   egress {
@@ -25,28 +25,30 @@ resource "aws_security_group" "ec2_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = { Name = "${var.project}-${var.env}-sg" }
+  tags   = { Name = "${var.project}-ec2-sg" }
 }
 
 resource "aws_eip" "ec2_eip" {
   domain = "vpc"
   instance = aws_instance.app.id
-  tags = { Name = "${var.project}-${var.env}-eip" }
+  tags = {
+    Name = "${var.project}-eip"
+  }
+
 }
 
 resource "aws_instance" "app" {
   ami                    = data.aws_ami.al2023.id
-  instance_type          = var.instance_type
+  instance_type          = "t3.micro"
   subnet_id              = element(var.public_subnet_ids, 0)
   associate_public_ip_address = true
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
-  user_data              = templatefile("${path.module}/user_data.tpl", {
-    git_repo   = var.git_repo
-    git_branch = var.git_branch
-    project    = var.project
+  user_data = templatefile("${path.module}/user_data.tpl", {
+    project            = var.project
+    ecr_repository_url = var.ecr_repository_url
+    image_tag          = var.image_tag
   })
-  tags = { Name = "${var.project}-${var.env}-ec2" }
 }
 
 data "aws_ami" "al2023" {
@@ -59,6 +61,6 @@ data "aws_ami" "al2023" {
 }
 
 resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "${var.project}-${var.env}-instance-profile"
+  name = "${var.project}-instance-profile"
   role = var.ec2_role_name
 }

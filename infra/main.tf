@@ -78,20 +78,16 @@ module "iam" {
 
 # --- EC2 Instance for Django API ---
 module "ec2" {
-  source            = "./modules/ec2"
-
-  project           = var.project_name      # matches variable "project" in module
-  env               = var.env               # matches variable "env" in module
-  vpc_id            = module.vpc.vpc_id     # matches variable "vpc_id"
-  public_subnet_ids = module.vpc.public_subnet_ids  # matches variable "public_subnet_ids"
-  instance_type     = var.instance_type
-  git_repo          = var.git_repo
-  git_branch        = var.git_branch
-  my_ip             = var.my_ip
-  ec2_role_name     = module.iam.ec2_role_name
+  source = "./modules/ec2"
+  ec2_role_name = module.iam.ec2_role_name
+  project            = var.project
+  vpc_id             = module.vpc.vpc_id
+  public_subnet_ids  = module.vpc.public_subnet_ids
+  my_ip_cidr = var.my_ip_cidr
   ecr_repository_url = "043656069964.dkr.ecr.${var.region}.amazonaws.com/${var.project}"
   image_tag          = "latest"
 }
+
 
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
   role       = aws_iam_role.lambda_exec_role.name

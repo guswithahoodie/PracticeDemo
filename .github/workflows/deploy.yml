@@ -1,21 +1,18 @@
 name: Deploy Infrastructure
 
 on:
+  push:
+    branches: ["infra-cleanup"]
   workflow_dispatch:
 
 jobs:
   deploy:
-    name: Terraform Deploy
+    name: Build & Deploy
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.7.5
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -23,6 +20,29 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
+
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.ECR_REPO_NAME }} ./backend
+
+      - name: Tag image
+        run: |
+          ECR_URL=$(aws ecr describe-repositories --repository-names ${{ secrets.ECR_REPO_NAME }} --region us-east-1 --query "repositories[0].repositoryUri" --output text)
+          docker tag ${{ secrets.ECR_REPO_NAME }}:latest $ECR_URL:latest
+          echo "ECR_URL=$ECR_URL" >> $GITHUB_ENV
+
+      - name: Push Image
+        run: |
+          docker push $ECR_URL:latest
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
 
       - name: Initialize Terraform
         working-directory: infra/envs/dev

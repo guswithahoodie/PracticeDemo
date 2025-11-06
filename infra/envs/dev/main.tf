@@ -30,14 +30,13 @@ module "iam" {
 
 module "ec2" {
   source            = "../../modules/ec2"
-  project           = var.project
-  env               = var.env
-  vpc_id            = module.vpc.this_vpc_id
-  public_subnet_ids = module.vpc.public_subnet_ids
-  instance_type     = var.instance_type
-  git_repo          = var.git_repo
-  git_branch        = var.git_branch
-  my_ip             = var.my_ip_cidr
 
-  ec2_role_name     = module.iam.ec2_role_name
+  project           = var.project
+  vpc_id            = module.vpc.vpc_id
+  public_subnet_ids = module.vpc.public_subnet_ids
+
+  my_ip_cidr        = var.my_ip_cidr
+  ecr_repository_url = "043656069964.dkr.ecr.${var.region}.amazonaws.com/${var.project}"
+  image_tag          = "latest"
+  ec2_role_name      = module.iam.ec2_role_name
 }
