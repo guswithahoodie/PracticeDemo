@@ -1,0 +1,27 @@
+name: Deploy Infrastructure
+
+on:
+  workflow_dispatch:  # manual trigger
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: demo_env
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Initialize Terraform
+        working-directory: infra/envs/dev
+        run: terraform init
+
+      - name: Apply Terraform
+        working-directory: infra/envs/dev
+        run: terraform apply -auto-approve

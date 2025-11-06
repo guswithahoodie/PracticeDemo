@@ -1,0 +1,50 @@
+# ---- Terraform ----
+.terraform/
+*.tfstate
+*.tfstate.backup
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraform.lock.hcl
+
+# ---- Python / Django ----
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+dist/
+build/
+env/
+venv/
+*.log
+*.pot
+*.pyc
+db.sqlite3
+*.sqlite3
+
+# Django specific
+staticfiles/
+media/
+.env
+
+# ---- Docker ----
+*.tar
+*.img
+
+# ---- macOS system files ----
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# ---- VSCode ----
+.vscode/
+
+# ---- GitHub Actions ----
+.github/workflows/*.tmp
+
+# ---- Cache ----
+.cache/
