@@ -62,10 +62,10 @@ module "iam" {
 module "ec2" {
   source = "./modules/ec2"
 
-  subnet_id       = module.vpc.subnet_id
-  security_group  = module.vpc.security_group
-  ec2_role_name   = module.iam.ec2_role_name
-  project_name    = var.project_name
+  subnet_id      = module.vpc.subnet_id
+  security_group = module.vpc.security_group
+  ec2_role_name  = module.iam.ec2_role_name   # <--- pass the IAM role name from IAM module
+  project_name   = var.project_name
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
