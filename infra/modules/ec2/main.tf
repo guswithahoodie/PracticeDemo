@@ -60,5 +60,5 @@ data "aws_ami" "al2023" {
 
 resource "aws_iam_instance_profile" "ec2_profile" {
   name = "${var.project}-${var.env}-instance-profile"
-  role = aws_iam_role.ec2_role.name
+  role = var.ec2_role_name
 }
