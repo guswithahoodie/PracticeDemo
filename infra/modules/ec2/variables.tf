@@ -6,3 +6,6 @@ variable "instance_type" { default = "t3.micro" }
 variable "git_repo" {}
 variable "git_branch" { default = "dev" }
 variable "my_ip" {}
+variable "ec2_role_name" {
+  type = string
+}

@@ -44,6 +44,30 @@ resource "aws_iam_role" "lambda_exec_role" {
   })
 }
 
+# --- VPC Networking ---
+module "vpc" {
+  source = "./modules/vpc"
+
+  project_name = var.project_name
+}
+
+# --- IAM for EC2 ---
+module "iam" {
+  source = "./modules/iam"
+
+  project_name = var.project_name
+}
+
+# --- EC2 Instance for Django API ---
+module "ec2" {
+  source = "./modules/ec2"
+
+  subnet_id       = module.vpc.subnet_id
+  security_group  = module.vpc.security_group
+  ec2_role_name   = module.iam.ec2_role_name
+  project_name    = var.project_name
+}
+
 resource "aws_iam_role_policy_attachment" "lambda_logs" {
   role       = aws_iam_role.lambda_exec_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
