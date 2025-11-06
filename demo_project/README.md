@@ -1,57 +1,64 @@
-# demo_propject Task AI - Demo Project
+## Demo: gus-demo-project
 
-This project is a demo **Django-based task management API** deployed on AWS using ECS Fargate. It demonstrates how to containerize a Django application, push it to AWS ECR, and run it in a fully managed serverless container environment with an Application Load Balancer (ALB).
+Architecture:
+- Django REST API (task manager) containerized and built on EC2
+- SQLite local DB (demo only)
+- Terraform-based infra (VPC, Subnet, EC2, Security Groups)
+- Manual deploy via GitHub Actions (workflow_dispatch)
+- Deploy target: EC2 instance public IP (port 80)
 
----
+Quick deploy (locally):
+```bash
+cd infra/envs/dev
+../../scripts/deploy.sh
 
-## Table of Contents
-1. [Project Overview](#project-overview)  
-2. [Django Application](#django-application)  
-3. [Architecture & AWS Components](#architecture--aws-components)  
-4. [Local Development](#local-development)  
-5. [Deployment](#deployment)  
-6. [Shutting Down Resources](#shutting-down-resources)  
-7. [Next Steps](#next-steps)
+cd infra/envs/dev
+../../scripts/destroy.sh
 
----
-
-## Project Overview
-
-The goal of this project is to:
-
-- Build a Django API (`task_api`) for managing tasks.
-- Containerize the Django application using Docker.
-- Push the Docker image to AWS ECR.
-- Deploy the app on **AWS ECS Fargate** using an Application Load Balancer for public access.
-- Learn end-to-end cloud deployment while keeping costs minimal via shutdown scripts.
 
 ---
 
-## Django Application
+# 11) Important operational notes / next steps (you must read)
+1. **Secrets**: Add `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in GitHub repo secrets (for the Actions deploy job). Use least-privilege keys (allow tf create/destroy, ec2, iam, etc.). You can also use Terraform Cloud if you prefer remote state and run triggers there.
 
-The backend is built with **Django 3.x+ / Python 3.12** and includes:
+2. **Branch protection**: Enforce PR approvals on `main` (Settings → Branches) so deployments require a PR and approval.
 
-- **Apps:**
-  - `task_api` – handles REST API endpoints for tasks.
-  - `tasks` – defines models, business logic, and database migrations.
-- **Key Files:**
-  - `manage.py` – Django CLI utility.
-  - `requirements.txt` – lists Python dependencies (including Django, Django REST Framework, etc.).
-  - `Dockerfile` – Docker configuration to containerize the Django app.
-  - `docker-compose.yml` – optional local development setup with containers.
+3. **User data branch**: `infra/envs/dev/variables.tf` default `git_branch = "infra-cleanup"`. If you want the EC2 to pull `dev` branch instead, set that variable or update the workflow to pass `TF_VAR_git_branch`.
+
+4. **Instance public IP**: After `terraform apply`, the output will show the instance public IP. Visit `http://<EC2_IP>/tasks/` (or root) to use DRF browsable API. Because Gunicorn binds to port 80, hitting `http://<ip>/` should work.
+
+5. **Access**: SSH port 22 is restricted to your IP only, but we mostly use SSM. If SSH is required later, you can enable it temporarily.
+
+6. **Cost**: Running the t3.micro EC2 will incur small cost when running; destroy with `destroy.sh` when not using.
+
+7. **Troubleshooting**: If the container does not start, view instance system logs via AWS Console → EC2 → Instance → System Log, or connect via SSM and run `docker ps` and `docker logs`.
 
 ---
 
-## Architecture & AWS Components
+# 12) How to proceed now (exact steps for you)
 
-The deployment uses the following AWS services:
+1. Add the files above into your `infra-cleanup` branch in the matching paths.
+   - `infra/modules/...` files
+   - `infra/envs/dev/...` files
+   - `infra/scripts/deploy.sh` & `destroy.sh`
+   - replace `backend/Dockerfile` content with the provided Dockerfile.
+   - add the GitHub Actions workflow under `.github/workflows/aws-deploy.yml`
 
-| Component | Purpose |
-|-----------|---------|
-| **ECS Fargate** | Runs the Django app in a serverless container environment. |
-| **ECR (Elastic Container Registry)** | Stores the Docker image (`demo_propject-task-ai-dev:latest`). |
-| **ALB (Application Load Balancer)** | Distributes incoming HTTP requests to ECS tasks. |
-| **Target Groups** | Groups ECS tasks for the ALB to route traffic. |
-| **Security Groups** | Manages inbound/outbound access to tasks. |
-| **VPC & Subnets** | Isolated network for resources. |
-| **IAM Roles/Policies** | Permissions for ECS tasks to access ECR and CloudWatch logs. |
+2. Commit & push `infra-cleanup` branch and open a PR to `main`. Make sure branch protection requires approval; then approve and merge the PR.
+
+3. Add GitHub secrets: `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+
+4. In GitHub → Actions → open `CI & Manual Deploy` workflow and click **Run workflow** → choose `deploy`. Wait for Terraform apply to finish.
+
+5. After deployment completes, check Actions logs for the `terraform output instance_public_ip` and open `http://<ip>/tasks/` in browser. Login to admin at `/admin/` (you’ll need to create an admin user — see note below).
+
+---
+
+# 13) Creating Django admin user (two ways)
+
+- Local: create superuser locally and include in repo? (not safe)
+- Recommended: After instance is up, connect via SSM and run:
+```bash
+# via AWS Session Manager (console) or use SSM send-command
+# Example command
+sudo docker exec -it gus-demo-project-container python manage.py createsuperuser
