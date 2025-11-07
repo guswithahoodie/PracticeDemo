@@ -57,7 +57,7 @@ sleep 15
 
 # Run Django container, linked to Postgres
 docker run -d \
-  --name $${PROJECT}-container \
+  --name \$PROJECT-container \
   --link postgres-db:db \
   -e DB_NAME=appdb \
   -e DB_USER=admin \
