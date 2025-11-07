@@ -1,42 +1,43 @@
 #!/bin/bash
 set -e
 
-# Variables passed from Terraform:
-# ${project}
-# ${ecr_repository_url}
-# ${image_tag}
+# Variables:
+PROJECT="${project}"
+ECR_REPO_URL="${ecr_repository_url}"
+IMAGE_TAG="${image_tag}"
 
-# Update and install required packages
+# Update
 dnf update -y
-dnf install -y docker amazon-ssm-agent
+
+# Install Docker + AWS CLI + SSM Agent
+dnf install -y docker amazon-ssm-agent awscli
 
 # Enable services
 systemctl enable --now docker
 systemctl enable --now amazon-ssm-agent
 
-# Allow ec2-user to run docker
+# Allow ec2-user to use docker
 usermod -aG docker ec2-user
 
-# Determine region automatically
-REGION="$(curl -s http://169.254.169.254/latest/meta-data/placement/region)"
+# Get EC2 instance region from metadata
+REGION="$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r .region)"
 
 # Login to ECR
-aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin ${ecr_repository_url}
+aws ecr get-login-password --region "$REGION" \
+  | docker login --username AWS --password-stdin "$ECR_REPO_URL"
 
-# Define image name with tag
-IMAGE="${ecr_repository_url}:${image_tag}"
+# Define image
+IMAGE="$ECR_REPO_URL:$IMAGE_TAG"
 
-# Pull the container image
-docker pull $IMAGE
+# Pull latest image
+docker pull "$IMAGE"
 
-# Stop old container if exists
-if docker ps -a --format '{{.Names}}' | grep -q "^${project}-container$"; then
-  docker rm -f ${project}-container || true
-fi
+# Stop previous container if exists
+docker rm -f "$PROJECT-container" 2>/dev/null || true
 
-# Run container exposed on port 80
+# Run container
 docker run -d \
-  --name ${project}-container \
+  --name "$PROJECT-container" \
   -p 80:80 \
   --restart unless-stopped \
-  $IMAGE
+  "$IMAGE"
