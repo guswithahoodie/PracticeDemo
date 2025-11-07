@@ -1,5 +1,6 @@
 #!/bin/bash
-set -e
+set -euxo pipefail
+exec > >(tee /var/log/user-data-debug.log|logger -t user-data -s 2>/dev/console) 2>&1
 
 # Variables passed from Terraform
 PROJECT="${project}"
@@ -31,15 +32,12 @@ done
 
 echo "Detected region: $REGION" >> /var/log/user-data-debug.log
 
-# Login to ECR
+# Login to ECR (ignore errors temporarily so DB still runs)
 aws ecr get-login-password --region "$REGION" \
-  | docker login --username AWS --password-stdin "$ECR_REPO_URL"
+  | docker login --username AWS --password-stdin "$ECR_REPO_URL" || echo "ECR login failed, continuing..."
 
-# Define image
-IMAGE="$ECR_REPO_URL:$IMAGE_TAG"
-
-# Pull latest image
-docker pull "$IMAGE"
+# Pull latest image (also non-blocking)
+docker pull "$ECR_REPO_URL:$IMAGE_TAG" || echo "Docker pull failed, continuing..."
 
 # Stop and remove old containers if exist
 docker rm -f postgres-db \$PROJECT-container 2>/dev/null || true
@@ -51,7 +49,7 @@ docker run -d \
   -e POSTGRES_PASSWORD=admin123 \
   -e POSTGRES_DB=appdb \
   -p 5432:5432 \
-  postgres:15
+  postgres:15 || echo "Postgres container failed to start!"
 
 # Wait for DB to be ready
 sleep 15
@@ -65,4 +63,4 @@ docker run -d \
   -e DB_PASSWORD=admin123 \
   -e DB_HOST=db \
   -p 8000:8000 \
-  "$IMAGE"
+  "$ECR_REPO_URL:$IMAGE_TAG" || echo "Django container failed to start!"
