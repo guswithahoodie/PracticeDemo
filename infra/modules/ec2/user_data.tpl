@@ -20,7 +20,8 @@ systemctl enable --now amazon-ssm-agent
 usermod -aG docker ec2-user
 
 # Get EC2 instance region from metadata
-REGION=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | grep '"region"' | awk -F\" '{print $4}')
+REGION=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | sed -n 's/.*"region"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+echo "Detected region: $REGION" >> /var/log/user-data-debug.log
 
 # Login to ECR
 aws ecr get-login-password --region "$REGION" \
