@@ -23,4 +23,4 @@ COPY . .
 EXPOSE 80
 
 # Run migrations, then launch Gunicorn
-CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn task_api.wsgi:application --bind 0.0.0.0:80 --workers 3"]
+CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn task_api.wsgi:application --bind 0.0.0.0:8000 --workers 3"]
