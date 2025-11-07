@@ -40,7 +40,7 @@ aws ecr get-login-password --region "$REGION" \
 docker pull "$ECR_REPO_URL:$IMAGE_TAG" || echo "Docker pull failed, continuing..."
 
 # Stop and remove old containers if exist
-docker rm -f postgres-db \${PROJECT}-container 2>/dev/null || true
+docker rm -f postgres-db $${PROJECT}-container 2>/dev/null || true
 
 # Run PostgreSQL container
 docker run -d \
@@ -57,7 +57,7 @@ sleep 15
 
 # Run Django container, linked to Postgres
 docker run -d \
-  --name \${PROJECT}-container \
+  --name $${PROJECT}-container \
   --link postgres-db:db \
   -e DB_NAME=appdb \
   -e DB_USER=admin \
