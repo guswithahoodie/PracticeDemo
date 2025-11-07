@@ -62,6 +62,7 @@ docker run -d \
   -e DB_NAME=appdb \
   -e DB_USER=admin \
   -e DB_PASSWORD=admin123 \
-  -e DB_HOST=db \
+  -e DB_HOST=postgres-db \
+  -e DB_PORT=5432 \
   -p 8000:8000 \
   "$ECR_REPO_URL:$IMAGE_TAG" || echo "Django container failed to start!"
