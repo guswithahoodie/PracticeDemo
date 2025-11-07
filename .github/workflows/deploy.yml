@@ -1,8 +1,6 @@
 name: Deploy Infrastructure
 
 on:
-  # push:
-    # branches: ["infra-cleanup"]
   workflow_dispatch:
 
 jobs:
@@ -22,36 +20,38 @@ jobs:
           aws-region: us-east-1
 
       - name: Login to ECR
-        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.ECR_REPO_NAME }} ./backend
+          docker build --platform linux/amd64 -t ${{ secrets.ECR_REPO_NAME }} ./backend
 
       - name: Tag image
         run: |
-          ECR_URL=$(aws ecr describe-repositories --repository-names ${{ secrets.ECR_REPO_NAME }} --region us-east-1 --query "repositories[0].repositoryUri" --output text)
+          ECR_URL=$(aws ecr describe-repositories \
+            --repository-names ${{ secrets.ECR_REPO_NAME }} \
+            --region us-east-1 \
+            --query "repositories[0].repositoryUri" \
+            --output text)
           docker tag ${{ secrets.ECR_REPO_NAME }}:latest $ECR_URL:latest
           echo "ECR_URL=$ECR_URL" >> $GITHUB_ENV
 
-      - name: Push Image
-        run: |
-          docker push $ECR_URL:latest
+      - name: Push image to ECR
+        run: docker push $ECR_URL:latest
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.7.5
 
-      - name: Initialize Terraform
+      - name: Terraform Init
         working-directory: infra/envs/dev
         run: terraform init
 
-      - name: Plan Terraform
+      - name: Terraform Plan
         working-directory: infra/envs/dev
         run: terraform plan -out=tfplan
 
-      - name: Apply Terraform
+      - name: Terraform Apply
         working-directory: infra/envs/dev
         run: terraform apply -auto-approve tfplan
