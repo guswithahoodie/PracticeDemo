@@ -1,7 +1,7 @@
 name: Deploy Infrastructure
 
 on:
-  push:
+  # push:
     # branches: ["infra-cleanup"]
   workflow_dispatch:
 

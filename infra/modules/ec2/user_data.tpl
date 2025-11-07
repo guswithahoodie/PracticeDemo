@@ -41,3 +41,5 @@ docker run -d \
   -p 80:80 \
   --restart unless-stopped \
   "$IMAGE"
+
+# test
