@@ -26,18 +26,18 @@ jobs:
         run: |
           docker build --platform linux/amd64 -t ${{ secrets.ECR_REPO_NAME }} ./backend
 
-      - name: Tag image
+      - name: Tag and Push Image
         run: |
           ECR_URL=$(aws ecr describe-repositories \
             --repository-names ${{ secrets.ECR_REPO_NAME }} \
             --region us-east-1 \
             --query "repositories[0].repositoryUri" \
             --output text)
-          docker tag ${{ secrets.ECR_REPO_NAME }}:latest $ECR_URL:latest
-          echo "ECR_URL=$ECR_URL" >> $GITHUB_ENV
 
-      - name: Push image to ECR
-        run: docker push $ECR_URL:latest
+          docker tag ${{ secrets.ECR_REPO_NAME }}:latest $ECR_URL:latest
+          docker push $ECR_URL:latest
+
+          echo "ECR_URL=$ECR_URL" >> $GITHUB_ENV
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
