@@ -18,3 +18,11 @@ resource "aws_iam_role_policy_attachment" "ssm_managed" {
   role       = aws_iam_role.ec2_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
+
+resource "aws_ecr_repository" "backend" {
+  name = var.project  # or "gus_demo_project" if you want explicit
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+  force_delete = true
+}

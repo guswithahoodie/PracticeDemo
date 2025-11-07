@@ -1,15 +1,28 @@
-variable "project" {}
-variable "env" {}
-variable "vpc_id" {}
+variable "project" {
+  type = string
+}
+
+variable "vpc_id" {
+  type = string
+}
+
 variable "public_subnet_ids" {
   type = list(string)
 }
-variable "instance_type" {}
-variable "git_repo" {}
-variable "git_branch" {}
-variable "my_ip" {}
+
+variable "ecr_repository_url" {
+  type = string
+}
+
+variable "image_tag" {
+  type    = string
+  default = "latest"
+}
+
+variable "my_ip_cidr" {
+  type = string
+}
 
 variable "ec2_role_name" {
-  description = "IAM role name to attach to EC2 instance"
-  type        = string
+  type = string
 }

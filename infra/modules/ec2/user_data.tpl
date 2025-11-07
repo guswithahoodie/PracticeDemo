@@ -1,31 +1,43 @@
 #!/bin/bash
 set -e
 
-# Basic deps
-yum update -y
-yum install -y git docker
+# Variables passed from Terraform
+PROJECT="${project}"
+ECR_REPO_URL="${ecr_repository_url}"
+IMAGE_TAG="${image_tag}"
 
+# Update
+dnf update -y
+
+# Install Docker + AWS CLI + SSM Agent
+dnf install -y docker amazon-ssm-agent awscli
+
+# Enable services
 systemctl enable --now docker
+systemctl enable --now amazon-ssm-agent
 
-# Add ec2-user to docker group
-usermod -a -G docker ec2-user
+# Allow ec2-user to use docker
+usermod -aG docker ec2-user
 
-cd /home/ec2-user
-if [ -d "${project}" ]; then
-  rm -rf ${project}
-fi
+# Get EC2 instance region from metadata
+REGION=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | grep region | awk -F\" '{print $4}')
 
-# Clone chosen branch
-git clone --depth 1 -b ${git_branch} ${git_repo} ${project}
-chown -R ec2-user:ec2-user ${project}
-cd ${project}/backend
+# Login to ECR
+aws ecr get-login-password --region "$REGION" \
+  | docker login --username AWS --password-stdin "$ECR_REPO_URL"
 
-# Build docker image and run
-docker build -t ${project}-image .
-# Stop existing container if running
-if docker ps -a --format '{{.Names}}' | grep -q "^${project}-container$"; then
-  docker rm -f ${project}-container || true
-fi
+# Define image
+IMAGE="$ECR_REPO_URL:$IMAGE_TAG"
 
-# Run container mapping host 80 to container 80
-docker run -d --name ${project}-container -p 80:80 --restart unless-stopped ${project}-image
+# Pull latest image
+docker pull "$IMAGE"
+
+# Stop previous container if exists
+docker rm -f "$PROJECT-container" 2>/dev/null || true
+
+# Run container
+docker run -d \
+  --name "$PROJECT-container" \
+  -p 80:80 \
+  --restart unless-stopped \
+  "$IMAGE"
