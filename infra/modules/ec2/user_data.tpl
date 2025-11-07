@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Variables:
+# Variables passed from Terraform
 PROJECT="${project}"
 ECR_REPO_URL="${ecr_repository_url}"
 IMAGE_TAG="${image_tag}"
