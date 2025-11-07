@@ -41,6 +41,10 @@ resource "aws_instance" "app" {
     ecr_repository_url = var.ecr_repository_url
     image_tag          = var.image_tag
   })
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "optional"
+  }
 }
 
 data "aws_ami" "al2023" {

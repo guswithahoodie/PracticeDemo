@@ -19,8 +19,16 @@ systemctl enable --now amazon-ssm-agent
 # Allow ec2-user to use docker
 usermod -aG docker ec2-user
 
-# Get EC2 instance region from metadata
-REGION=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | sed -n 's/.*"region"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+# Get EC2 instance region from metadata (retry until available)
+for i in {1..10}; do
+  REGION=$(curl -s --max-time 2 http://169.254.169.254/latest/dynamic/instance-identity/document | awk -F'"' '/region/ {print $4}')
+  if [ -n "$REGION" ]; then
+    break
+  fi
+  echo "Waiting for instance metadata... attempt $i" >> /var/log/user-data-debug.log
+  sleep 3
+done
+
 echo "Detected region: $REGION" >> /var/log/user-data-debug.log
 
 # Login to ECR
