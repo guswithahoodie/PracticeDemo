@@ -41,14 +41,28 @@ IMAGE="$ECR_REPO_URL:$IMAGE_TAG"
 # Pull latest image
 docker pull "$IMAGE"
 
-# Stop previous container if exists
-docker rm -f "$PROJECT-container" 2>/dev/null || true
+# Stop and remove old containers if exist
+docker rm -f postgres-db ${PROJECT}-container 2>/dev/null || true
 
-# Run container
+# Run PostgreSQL container
 docker run -d \
-  --name "$PROJECT-container" \
-  -p 80:80 \
-  --restart unless-stopped \
-  "$IMAGE"
+  --name postgres-db \
+  -e POSTGRES_USER=admin \
+  -e POSTGRES_PASSWORD=admin123 \
+  -e POSTGRES_DB=appdb \
+  -p 5432:5432 \
+  postgres:15
 
-# test
+# Wait for DB to be ready
+sleep 15
+
+# Run Django container, linked to Postgres
+docker run -d \
+  --name ${PROJECT}-container \
+  --link postgres-db:db \
+  -e DB_NAME=appdb \
+  -e DB_USER=admin \
+  -e DB_PASSWORD=admin123 \
+  -e DB_HOST=db \
+  -p 8000:8000 \
+  "$IMAGE"
