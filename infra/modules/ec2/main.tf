@@ -35,7 +35,7 @@ resource "aws_instance" "app" {
   subnet_id              = element(var.public_subnet_ids, 0)
   associate_public_ip_address = true
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
-  vpc_security_group_ids = [aws_security_group.ec2_sg.id]
+  vpc_security_group_ids = [aws_security_group.app_sg.id]
   user_data = templatefile("${path.module}/user_data.tpl", {
     project            = var.project
     ecr_repository_url = var.ecr_repository_url
