@@ -45,6 +45,10 @@ resource "aws_instance" "app" {
     http_endpoint = "enabled"
     http_tokens   = "optional"
   }
+  root_block_device {
+  volume_size = 10       # at least 10 GB recommended
+  volume_type = "gp3"
+  }
 }
 
 data "aws_ami" "al2023" {
