@@ -48,6 +48,7 @@ docker run -d \
   -e POSTGRES_USER=admin \
   -e POSTGRES_PASSWORD=admin123 \
   -e POSTGRES_DB=appdb \
+  -v /var/lib/postgresql/data:/var/lib/postgresql/data \
   -p 5432:5432 \
   postgres:15 || echo "Postgres container failed to start!"
 
