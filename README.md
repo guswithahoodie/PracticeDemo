@@ -45,7 +45,7 @@ That means everything’s working — just no homepage route yet.
 ```bash
 terraform init
 terraform apply -auto-approve
-
+```
 Then check:
 
 http://<your-instance-public-ip>:8000
