@@ -3,11 +3,22 @@
 This is a small end-to-end demo I built to practice deploying a Django app with Terraform and AWS.  
 It automatically sets up the whole stack — network, EC2 instance, Docker, PostgreSQL, and the Django backend — all running together in the cloud.
 
-### 🎞️ Terraform Apply (Demo)
-[![Terraform Apply](repo_resources/tf_apply_thumbnail.png)](https://github.com/<username>/<repo-name>/blob/main/repo_resources/tf_apply.mp4?raw=true)
+## 📸 Project Previews
 
-### 🖥️ AWS SSM, Docker Containers, and URL Connectivity (Demo)
-[![AWS Demo](repo_resources/aws_ssm_docker_containers_url_thumbnail.png)](https://github.com/<username>/<repo-name>/blob/main/repo_resources/aws_ssm_docker_containers_url.mp4?raw=true)
+### 🧱 1. Terraform Apply
+![Terraform Apply](repo_resources/tf_apply.png)
+
+### ☁️ 2. Postgres and Django Docker Containers in AWS EC2 Instance Created
+![AWS EC2 Instance](repo_resources/docker_containers_db_django.png)
+
+### 🐳 3. Parent URL Live, Internet Accessible
+![Docker Containers Running](repo_resources/parent_url.png)
+
+### 🔗 4. Django App Connected to PostgreSQL
+![Django PostgreSQL Connection](repo_resources/admin.png)
+
+### 🌐 5. Application Running in Browser
+![Application Running](repo_resources/api.png)
 
 ---
 
