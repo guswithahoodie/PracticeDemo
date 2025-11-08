@@ -50,10 +50,16 @@ That means everything’s working — just no homepage route yet.
 ```bash
 terraform init
 terraform apply -auto-approve
+```
 
 Then check:
 
 http://<your-instance-public-ip>:8000
 
 Keeping it simple. It’s not a big app — just a solid, automated setup that proves everything’s working together nicely.
+
 ---
+
+Here are some useful commands that came in handy while building this project → [Demo_Project_commands.pdf](repo_resources/Demo_Project_commands.pdf)
+
+Here I documented the challenges I had while building this project → [Demo_Project_Report.pdf](repo_resources/Demo_Project_Report.pdf)
