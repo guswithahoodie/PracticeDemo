@@ -54,7 +54,7 @@ terraform apply -auto-approve
 
 Then check:
 
-http://<your-instance-public-ip>:8000
+http://your-instance-public-ip:8000
 
 Keeping it simple. It’s not a big app — just a solid, automated setup that proves everything’s working together nicely.
 
